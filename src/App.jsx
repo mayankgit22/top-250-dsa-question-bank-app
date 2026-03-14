@@ -1,0 +1,133 @@
+import { useState, useEffect, useMemo } from "react";
+import questions from "./data/questions";
+import QuestionCard from "./components/QuestionCard";
+import ProgressBar from "./components/ProgressBar";
+import FilterBar from "./components/FilterBar";
+import "./App.css";
+
+const STORAGE_KEY = "dsa-completed-questions";
+
+function loadCompleted() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch {
+    return {};
+  }
+}
+
+function App() {
+  const [completed, setCompleted] = useState(loadCompleted);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedTopic, setSelectedTopic] = useState("All");
+  const [selectedDifficulty, setSelectedDifficulty] = useState("All");
+  const [selectedCompany, setSelectedCompany] = useState("All");
+  const [showCompleted, setShowCompleted] = useState("All");
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(completed));
+  }, [completed]);
+
+  const topics = useMemo(() => {
+    const set = new Set(questions.map((q) => q.topic));
+    return ["All", ...Array.from(set).sort()];
+  }, []);
+
+  const companies = useMemo(() => {
+    const set = new Set(questions.flatMap((q) => q.companies));
+    return ["All", ...Array.from(set).sort()];
+  }, []);
+
+  const difficulties = ["All", "Easy", "Medium", "Hard"];
+
+  const toggleComplete = (id) => {
+    setCompleted((prev) => {
+      const next = { ...prev };
+      if (next[id]) {
+        delete next[id];
+      } else {
+        next[id] = true;
+      }
+      return next;
+    });
+  };
+
+  const filteredQuestions = useMemo(() => {
+    return questions.filter((q) => {
+      if (
+        searchTerm &&
+        !q.title.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+        return false;
+      if (selectedTopic !== "All" && q.topic !== selectedTopic) return false;
+      if (
+        selectedDifficulty !== "All" &&
+        q.difficulty !== selectedDifficulty
+      )
+        return false;
+      if (
+        selectedCompany !== "All" &&
+        !q.companies.includes(selectedCompany)
+      )
+        return false;
+      if (showCompleted === "Completed" && !completed[q.id]) return false;
+      if (showCompleted === "Pending" && completed[q.id]) return false;
+      return true;
+    });
+  }, [searchTerm, selectedTopic, selectedDifficulty, selectedCompany, showCompleted, completed]);
+
+  const completedCount = Object.keys(completed).length;
+
+  return (
+    <div className="app">
+      <header className="app-header">
+        <h1>🧠 Top 250 DSA Question Bank</h1>
+        <p className="subtitle">
+          Master your Data Structures &amp; Algorithms — track your progress, filter
+          by topic, and crush your next interview!
+        </p>
+      </header>
+
+      <ProgressBar completed={completedCount} total={questions.length} />
+
+      <FilterBar
+        searchTerm={searchTerm}
+        setSearchTerm={setSearchTerm}
+        selectedTopic={selectedTopic}
+        setSelectedTopic={setSelectedTopic}
+        topics={topics}
+        selectedDifficulty={selectedDifficulty}
+        setSelectedDifficulty={setSelectedDifficulty}
+        difficulties={difficulties}
+        selectedCompany={selectedCompany}
+        setSelectedCompany={setSelectedCompany}
+        companies={companies}
+        showCompleted={showCompleted}
+        setShowCompleted={setShowCompleted}
+      />
+
+      <div className="questions-count">
+        Showing {filteredQuestions.length} of {questions.length} questions
+      </div>
+
+      <div className="questions-grid">
+        {filteredQuestions.map((q) => (
+          <QuestionCard
+            key={q.id}
+            question={q}
+            isCompleted={!!completed[q.id]}
+            onToggle={() => toggleComplete(q.id)}
+          />
+        ))}
+      </div>
+
+      {filteredQuestions.length === 0 && (
+        <div className="no-results">
+          <p>No questions match your filters. Try adjusting your search criteria.</p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default App;
