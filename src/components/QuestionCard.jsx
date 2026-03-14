@@ -1,5 +1,5 @@
 function QuestionCard({ question, isCompleted, onToggle }) {
-  const { title, topic, pattern, difficulty, companies, link, id } = question;
+  const { title, topic, pattern, difficulty, companies, link, id, tag } = question;
 
   const difficultyClass = difficulty.toLowerCase();
 
@@ -7,9 +7,14 @@ function QuestionCard({ question, isCompleted, onToggle }) {
     <div className={`question-card ${isCompleted ? "completed" : ""}`}>
       <div className="card-header">
         <span className="question-id">#{id}</span>
-        <span className={`difficulty-badge ${difficultyClass}`}>
-          {difficulty}
-        </span>
+        <div className="card-header-badges">
+          <span className={`tag-badge tag-${tag.toLowerCase().replace(/ /g, "-")}`}>
+            {tag}
+          </span>
+          <span className={`difficulty-badge ${difficultyClass}`}>
+            {difficulty}
+          </span>
+        </div>
       </div>
 
       <h3 className="question-title">

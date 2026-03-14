@@ -12,6 +12,9 @@ function FilterBar({
   companies,
   showCompleted,
   setShowCompleted,
+  selectedTag,
+  setSelectedTag,
+  tags,
 }) {
   return (
     <div className="filter-bar">
@@ -81,6 +84,21 @@ function FilterBar({
             <option value="All">All</option>
             <option value="Completed">Completed</option>
             <option value="Pending">Pending</option>
+          </select>
+        </div>
+
+        <div className="filter-group">
+          <label htmlFor="tag-filter">Type</label>
+          <select
+            id="tag-filter"
+            value={selectedTag}
+            onChange={(e) => setSelectedTag(e.target.value)}
+          >
+            {tags.map((t) => (
+              <option key={t} value={t}>
+                {t}
+              </option>
+            ))}
           </select>
         </div>
       </div>

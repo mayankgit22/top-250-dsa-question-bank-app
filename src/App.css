@@ -165,6 +165,12 @@
   align-items: center;
 }
 
+.card-header-badges {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
 .question-id {
   font-size: 0.8rem;
   font-weight: 600;
@@ -193,6 +199,31 @@
 .difficulty-badge.hard {
   background: #fecaca;
   color: #991b1b;
+}
+
+/* ===== TAG BADGES ===== */
+.tag-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tag-interview {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.tag-oa {
+  background: #fce7f3;
+  color: #9d174d;
+}
+
+.tag-both {
+  background: #d1fae5;
+  color: #065f46;
 }
 
 .question-title {
@@ -627,6 +658,18 @@
     background: rgba(100, 116, 139, 0.2);
     color: #94a3b8;
     border-color: rgba(100, 116, 139, 0.3);
+  }
+  .tag-interview {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+  }
+  .tag-oa {
+    background: rgba(236, 72, 153, 0.2);
+    color: #f472b6;
+  }
+  .tag-both {
+    background: rgba(52, 211, 153, 0.2);
+    color: #34d399;
   }
   .question-card {
     --card-bg: #1e1f26;

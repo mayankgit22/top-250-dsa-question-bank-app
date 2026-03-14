@@ -24,6 +24,7 @@ function App() {
   const [selectedDifficulty, setSelectedDifficulty] = useState("All");
   const [selectedCompany, setSelectedCompany] = useState("All");
   const [showCompleted, setShowCompleted] = useState("All");
+  const [selectedTag, setSelectedTag] = useState("All");
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(completed));
@@ -40,6 +41,7 @@ function App() {
   }, []);
 
   const difficulties = ["All", "Easy", "Medium", "Hard"];
+  const tags = ["All", "Interview", "OA", "Both"];
 
   const toggleComplete = (id) => {
     setCompleted((prev) => {
@@ -73,9 +75,10 @@ function App() {
         return false;
       if (showCompleted === "Completed" && !completed[q.id]) return false;
       if (showCompleted === "Pending" && completed[q.id]) return false;
+      if (selectedTag !== "All" && q.tag !== selectedTag) return false;
       return true;
     });
-  }, [searchTerm, selectedTopic, selectedDifficulty, selectedCompany, showCompleted, completed]);
+  }, [searchTerm, selectedTopic, selectedDifficulty, selectedCompany, showCompleted, selectedTag, completed]);
 
   const completedCount = Object.keys(completed).length;
 
@@ -106,6 +109,9 @@ function App() {
         companies={companies}
         showCompleted={showCompleted}
         setShowCompleted={setShowCompleted}
+        selectedTag={selectedTag}
+        setSelectedTag={setSelectedTag}
+        tags={tags}
       />
 
       <div className="questions-count">
