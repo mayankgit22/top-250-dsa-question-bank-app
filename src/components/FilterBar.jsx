@@ -12,9 +12,8 @@ function FilterBar({
   companies,
   showCompleted,
   setShowCompleted,
-  selectedTag,
-  setSelectedTag,
-  tags,
+  showFavorites,
+  setShowFavorites,
 }) {
   return (
     <div className="filter-bar">
@@ -88,17 +87,15 @@ function FilterBar({
         </div>
 
         <div className="filter-group">
-          <label htmlFor="tag-filter">Type</label>
+          <label htmlFor="favorites-filter">Revisit</label>
           <select
-            id="tag-filter"
-            value={selectedTag}
-            onChange={(e) => setSelectedTag(e.target.value)}
+            id="favorites-filter"
+            value={showFavorites}
+            onChange={(e) => setShowFavorites(e.target.value)}
           >
-            {tags.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
+            <option value="All">All</option>
+            <option value="Favorites">Marked</option>
+            <option value="Not Favorites">Not Marked</option>
           </select>
         </div>
       </div>

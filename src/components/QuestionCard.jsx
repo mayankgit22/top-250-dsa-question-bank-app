@@ -1,5 +1,5 @@
-function QuestionCard({ question, isCompleted, onToggle }) {
-  const { title, topic, pattern, difficulty, companies, link, id, tag } = question;
+function QuestionCard({ question, isCompleted, isFavorite, onToggle, onToggleFavorite }) {
+  const { title, topic, pattern, difficulty, companies, link, id } = question;
 
   const difficultyClass = difficulty.toLowerCase();
 
@@ -7,10 +7,8 @@ function QuestionCard({ question, isCompleted, onToggle }) {
     <div className={`question-card ${isCompleted ? "completed" : ""}`}>
       <div className="card-header">
         <span className="question-id">#{id}</span>
-        <div className="card-header-badges">
-          <span className={`tag-badge tag-${tag.toLowerCase().replace(/ /g, "-")}`}>
-            {tag}
-          </span>
+        <div className="card-header-right">
+          {isFavorite && <span className="revisit-tag">🔁 Revisit</span>}
           <span className={`difficulty-badge ${difficultyClass}`}>
             {difficulty}
           </span>
@@ -44,13 +42,22 @@ function QuestionCard({ question, isCompleted, onToggle }) {
       </div>
 
       <div className="card-footer">
-        <button
-          className={`complete-btn ${isCompleted ? "completed" : ""}`}
-          onClick={onToggle}
-          aria-label={isCompleted ? "Mark as incomplete" : "Mark as complete"}
-        >
-          {isCompleted ? "✅ Completed" : "⬜ Mark Complete"}
-        </button>
+        <div className="card-actions">
+          <button
+            className={`complete-btn ${isCompleted ? "completed" : ""}`}
+            onClick={onToggle}
+            aria-label={isCompleted ? "Mark as incomplete" : "Mark as complete"}
+          >
+            {isCompleted ? "✅ Completed" : "⬜ Mark Complete"}
+          </button>
+          <button
+            className={`favorite-btn ${isFavorite ? "favorited" : ""}`}
+            onClick={onToggleFavorite}
+            aria-label={isFavorite ? "Remove from revisit" : "Mark for revisit"}
+          >
+            {isFavorite ? "⭐ Revisit" : "☆ Revisit"}
+          </button>
+        </div>
       </div>
     </div>
   );

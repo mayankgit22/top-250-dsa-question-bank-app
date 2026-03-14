@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import questions from "./data/questions";
 import QuestionCard from "./components/QuestionCard";
 import ProgressBar from "./components/ProgressBar";
@@ -7,6 +7,7 @@ import Sidebar from "./components/Sidebar";
 import "./App.css";
 
 const STORAGE_KEY = "dsa-completed-questions";
+const FAVORITES_KEY = "dsa-favorite-questions";
 
 function loadCompleted() {
   try {
@@ -17,18 +18,45 @@ function loadCompleted() {
   }
 }
 
+function loadFavorites() {
+  try {
+    const stored = localStorage.getItem(FAVORITES_KEY);
+    return stored ? JSON.parse(stored) : {};
+  } catch {
+    return {};
+  }
+}
+
 function App() {
   const [completed, setCompleted] = useState(loadCompleted);
+  const [favorites, setFavorites] = useState(loadFavorites);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedTopic, setSelectedTopic] = useState("All");
   const [selectedDifficulty, setSelectedDifficulty] = useState("All");
   const [selectedCompany, setSelectedCompany] = useState("All");
   const [showCompleted, setShowCompleted] = useState("All");
-  const [selectedTag, setSelectedTag] = useState("All");
+  const [showFavorites, setShowFavorites] = useState("All");
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(completed));
   }, [completed]);
+
+  useEffect(() => {
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites));
+  }, [favorites]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
   const topics = useMemo(() => {
     const set = new Set(questions.map((q) => q.topic));
@@ -43,8 +71,8 @@ function App() {
   const difficulties = ["All", "Easy", "Medium", "Hard"];
   const tags = ["All", "Interview", "OA", "Both"];
 
-  const toggleComplete = (id) => {
-    setCompleted((prev) => {
+  const toggleItem = (setter) => (id) => {
+    setter((prev) => {
       const next = { ...prev };
       if (next[id]) {
         delete next[id];
@@ -54,6 +82,9 @@ function App() {
       return next;
     });
   };
+
+  const toggleComplete = toggleItem(setCompleted);
+  const toggleFavorite = toggleItem(setFavorites);
 
   const filteredQuestions = useMemo(() => {
     return questions.filter((q) => {
@@ -75,10 +106,11 @@ function App() {
         return false;
       if (showCompleted === "Completed" && !completed[q.id]) return false;
       if (showCompleted === "Pending" && completed[q.id]) return false;
-      if (selectedTag !== "All" && q.tag !== selectedTag) return false;
+      if (showFavorites === "Favorites" && !favorites[q.id]) return false;
+      if (showFavorites === "Not Favorites" && favorites[q.id]) return false;
       return true;
     });
-  }, [searchTerm, selectedTopic, selectedDifficulty, selectedCompany, showCompleted, selectedTag, completed]);
+  }, [searchTerm, selectedTopic, selectedDifficulty, selectedCompany, showCompleted, showFavorites, completed, favorites]);
 
   const completedCount = Object.keys(completed).length;
 
@@ -109,9 +141,8 @@ function App() {
         companies={companies}
         showCompleted={showCompleted}
         setShowCompleted={setShowCompleted}
-        selectedTag={selectedTag}
-        setSelectedTag={setSelectedTag}
-        tags={tags}
+        showFavorites={showFavorites}
+        setShowFavorites={setShowFavorites}
       />
 
       <div className="questions-count">
@@ -124,7 +155,9 @@ function App() {
             key={q.id}
             question={q}
             isCompleted={!!completed[q.id]}
+            isFavorite={!!favorites[q.id]}
             onToggle={() => toggleComplete(q.id)}
+            onToggleFavorite={() => toggleFavorite(q.id)}
           />
         ))}
       </div>
@@ -133,6 +166,17 @@ function App() {
         <div className="no-results">
           <p>No questions match your filters. Try adjusting your search criteria.</p>
         </div>
+      )}
+
+      {showScrollTop && (
+        <button
+          className="scroll-to-top"
+          onClick={scrollToTop}
+          aria-label="Scroll to top"
+          title="Scroll to top"
+        >
+          ↑
+        </button>
       )}
     </div>
   );
