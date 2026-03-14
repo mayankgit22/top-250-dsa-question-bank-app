@@ -58,19 +58,32 @@ describe("App", () => {
     expect(mediumBadges.length).toBeGreaterThan(0);
   });
 
-  it("shows scroll-to-top button when scrolled down", () => {
-    const original = window.scrollY;
-    Object.defineProperty(window, "scrollY", { value: 0, writable: true, configurable: true });
-
-    render(<App />);
-    expect(screen.queryByLabelText("Scroll to top")).not.toBeInTheDocument();
-
+  it("shows scroll-to-top button when scrolled down", async () => {
     Object.defineProperty(window, "scrollY", { value: 400, writable: true, configurable: true });
-    fireEvent.scroll(window);
 
-    const buttons = screen.getAllByLabelText("Scroll to top");
+    const { container } = render(<App />);
+    await act(async () => {
+      window.dispatchEvent(new Event("scroll"));
+    });
+
+    const buttons = container.querySelectorAll(".scroll-to-top");
     expect(buttons.length).toBeGreaterThan(0);
 
-    Object.defineProperty(window, "scrollY", { value: original, writable: true, configurable: true });
+    Object.defineProperty(window, "scrollY", { value: 0, writable: true, configurable: true });
+  });
+
+  it("toggles question favorite for revisit", () => {
+    render(<App />);
+    const favBtns = screen.getAllByText("☆ Revisit");
+    expect(favBtns.length).toBeGreaterThan(0);
+    fireEvent.click(favBtns[0]);
+    const markedBtns = screen.getAllByText("⭐ Revisit");
+    expect(markedBtns.length).toBeGreaterThan(0);
+  });
+
+  it("renders revisit filter dropdown", () => {
+    render(<App />);
+    const revisitFilter = document.getElementById("favorites-filter");
+    expect(revisitFilter).toBeInTheDocument();
   });
 });

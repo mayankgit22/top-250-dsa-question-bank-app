@@ -12,6 +12,8 @@ function FilterBar({
   companies,
   showCompleted,
   setShowCompleted,
+  showFavorites,
+  setShowFavorites,
 }) {
   return (
     <div className="filter-bar">
@@ -81,6 +83,19 @@ function FilterBar({
             <option value="All">All</option>
             <option value="Completed">Completed</option>
             <option value="Pending">Pending</option>
+          </select>
+        </div>
+
+        <div className="filter-group">
+          <label htmlFor="favorites-filter">Revisit</label>
+          <select
+            id="favorites-filter"
+            value={showFavorites}
+            onChange={(e) => setShowFavorites(e.target.value)}
+          >
+            <option value="All">All</option>
+            <option value="Favorites">Marked</option>
+            <option value="Not Favorites">Not Marked</option>
           </select>
         </div>
       </div>
