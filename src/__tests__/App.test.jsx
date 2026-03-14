@@ -70,6 +70,12 @@ describe("App", () => {
     expect(buttons.length).toBeGreaterThan(0);
 
     Object.defineProperty(window, "scrollY", { value: 0, writable: true, configurable: true });
+    await act(async () => {
+      window.dispatchEvent(new Event("scroll"));
+    });
+
+    const buttonsAfter = container.querySelectorAll(".scroll-to-top");
+    expect(buttonsAfter.length).toBe(0);
   });
 
   it("toggles question favorite for revisit", () => {

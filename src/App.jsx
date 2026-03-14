@@ -70,8 +70,8 @@ function App() {
 
   const difficulties = ["All", "Easy", "Medium", "Hard"];
 
-  const toggleComplete = (id) => {
-    setCompleted((prev) => {
+  const toggleItem = (setter) => (id) => {
+    setter((prev) => {
       const next = { ...prev };
       if (next[id]) {
         delete next[id];
@@ -82,17 +82,8 @@ function App() {
     });
   };
 
-  const toggleFavorite = (id) => {
-    setFavorites((prev) => {
-      const next = { ...prev };
-      if (next[id]) {
-        delete next[id];
-      } else {
-        next[id] = true;
-      }
-      return next;
-    });
-  };
+  const toggleComplete = toggleItem(setCompleted);
+  const toggleFavorite = toggleItem(setFavorites);
 
   const filteredQuestions = useMemo(() => {
     return questions.filter((q) => {
