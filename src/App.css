@@ -601,6 +601,31 @@
   color: #ef4444;
 }
 
+/* ===== SCROLL TO TOP BUTTON ===== */
+.scroll-to-top {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1001;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  font-size: 1.4rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.scroll-to-top:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
 /* ===== DARK MODE OVERRIDES ===== */
 @media (prefers-color-scheme: dark) {
   .difficulty-badge.easy {
@@ -641,6 +666,11 @@
     --bg: #16171c;
   }
   .sidebar-toggle {
+    --card-bg: #1e1f26;
+    background: var(--card-bg);
+    border-color: rgba(100, 116, 139, 0.3);
+  }
+  .scroll-to-top {
     --card-bg: #1e1f26;
     background: var(--card-bg);
     border-color: rgba(100, 116, 139, 0.3);

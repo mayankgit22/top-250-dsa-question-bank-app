@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import App from "../App";
 
 describe("App", () => {
@@ -56,5 +56,21 @@ describe("App", () => {
     const mediumBadges = screen.getAllByText("Medium");
     expect(easyBadges.length).toBeGreaterThan(0);
     expect(mediumBadges.length).toBeGreaterThan(0);
+  });
+
+  it("shows scroll-to-top button when scrolled down", () => {
+    const original = window.scrollY;
+    Object.defineProperty(window, "scrollY", { value: 0, writable: true, configurable: true });
+
+    render(<App />);
+    expect(screen.queryByLabelText("Scroll to top")).not.toBeInTheDocument();
+
+    Object.defineProperty(window, "scrollY", { value: 400, writable: true, configurable: true });
+    fireEvent.scroll(window);
+
+    const buttons = screen.getAllByLabelText("Scroll to top");
+    expect(buttons.length).toBeGreaterThan(0);
+
+    Object.defineProperty(window, "scrollY", { value: original, writable: true, configurable: true });
   });
 });

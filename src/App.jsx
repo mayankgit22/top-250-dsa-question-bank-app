@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import questions from "./data/questions";
 import QuestionCard from "./components/QuestionCard";
 import ProgressBar from "./components/ProgressBar";
@@ -24,10 +24,23 @@ function App() {
   const [selectedDifficulty, setSelectedDifficulty] = useState("All");
   const [selectedCompany, setSelectedCompany] = useState("All");
   const [showCompleted, setShowCompleted] = useState("All");
+  const [showScrollTop, setShowScrollTop] = useState(false);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(completed));
   }, [completed]);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowScrollTop(window.scrollY > 300);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const scrollToTop = useCallback(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
   const topics = useMemo(() => {
     const set = new Set(questions.map((q) => q.topic));
@@ -127,6 +140,17 @@ function App() {
         <div className="no-results">
           <p>No questions match your filters. Try adjusting your search criteria.</p>
         </div>
+      )}
+
+      {showScrollTop && (
+        <button
+          className="scroll-to-top"
+          onClick={scrollToTop}
+          aria-label="Scroll to top"
+          title="Scroll to top"
+        >
+          ↑
+        </button>
       )}
     </div>
   );
