@@ -164,6 +164,20 @@
   justify-content: space-between;
   align-items: center;
 }
+.card-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.revisit-tag {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 12px;
+  background: #fff7ed;
+  color: #ea580c;
+  border: 1px solid #fed7aa;
+}
 
 .question-id {
   font-size: 0.8rem;
@@ -296,6 +310,39 @@
 .complete-btn.completed:hover {
   background: #ef4444;
   border-color: #ef4444;
+}
+
+.card-actions {
+  display: flex;
+  gap: 8px;
+}
+.card-actions .complete-btn {
+  flex: 1;
+}
+.favorite-btn {
+  padding: 8px 12px;
+  border: 2px solid var(--border, #e5e4e7);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--bg, #fff);
+  color: var(--text-h, #08060d);
+  white-space: nowrap;
+}
+.favorite-btn:hover {
+  border-color: #ea580c;
+  background: rgba(234, 88, 12, 0.1);
+}
+.favorite-btn.favorited {
+  background: #ea580c;
+  color: white;
+  border-color: #ea580c;
+}
+.favorite-btn.favorited:hover {
+  background: #64748b;
+  border-color: #64748b;
 }
 
 /* ===== NO RESULTS ===== */
@@ -601,6 +648,31 @@
   color: #ef4444;
 }
 
+/* ===== SCROLL TO TOP BUTTON ===== */
+.scroll-to-top {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1001;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+  font-size: 1.4rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.scroll-to-top:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
 /* ===== DARK MODE OVERRIDES ===== */
 @media (prefers-color-scheme: dark) {
   .difficulty-badge.easy {
@@ -644,5 +716,15 @@
     --card-bg: #1e1f26;
     background: var(--card-bg);
     border-color: rgba(100, 116, 139, 0.3);
+  }
+  .scroll-to-top {
+    --card-bg: #1e1f26;
+    background: var(--card-bg);
+    border-color: rgba(100, 116, 139, 0.3);
+  }
+  .revisit-tag {
+    background: rgba(234, 88, 12, 0.2);
+    color: #fb923c;
+    border-color: rgba(234, 88, 12, 0.3);
   }
 }

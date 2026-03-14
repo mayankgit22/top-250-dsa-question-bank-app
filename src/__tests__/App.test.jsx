@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, act } from "@testing-library/react";
 import App from "../App";
 
 describe("App", () => {
@@ -56,5 +56,40 @@ describe("App", () => {
     const mediumBadges = screen.getAllByText("Medium");
     expect(easyBadges.length).toBeGreaterThan(0);
     expect(mediumBadges.length).toBeGreaterThan(0);
+  });
+
+  it("shows scroll-to-top button when scrolled down", async () => {
+    Object.defineProperty(window, "scrollY", { value: 400, writable: true, configurable: true });
+
+    const { container } = render(<App />);
+    await act(async () => {
+      window.dispatchEvent(new Event("scroll"));
+    });
+
+    const buttons = container.querySelectorAll(".scroll-to-top");
+    expect(buttons.length).toBeGreaterThan(0);
+
+    Object.defineProperty(window, "scrollY", { value: 0, writable: true, configurable: true });
+    await act(async () => {
+      window.dispatchEvent(new Event("scroll"));
+    });
+
+    const buttonsAfter = container.querySelectorAll(".scroll-to-top");
+    expect(buttonsAfter.length).toBe(0);
+  });
+
+  it("toggles question favorite for revisit", () => {
+    render(<App />);
+    const favBtns = screen.getAllByText("☆ Revisit");
+    expect(favBtns.length).toBeGreaterThan(0);
+    fireEvent.click(favBtns[0]);
+    const markedBtns = screen.getAllByText("⭐ Revisit");
+    expect(markedBtns.length).toBeGreaterThan(0);
+  });
+
+  it("renders revisit filter dropdown", () => {
+    render(<App />);
+    const revisitFilter = document.getElementById("favorites-filter");
+    expect(revisitFilter).toBeInTheDocument();
   });
 });
