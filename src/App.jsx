@@ -3,6 +3,7 @@ import questions from "./data/questions";
 import QuestionCard from "./components/QuestionCard";
 import ProgressBar from "./components/ProgressBar";
 import FilterBar from "./components/FilterBar";
+import Sidebar from "./components/Sidebar";
 import "./App.css";
 
 const STORAGE_KEY = "dsa-completed-questions";
@@ -80,6 +81,7 @@ function App() {
 
   return (
     <div className="app">
+      <Sidebar />
       <header className="app-header">
         <h1>🧠 Top 250 DSA Question Bank</h1>
         <p className="subtitle">
