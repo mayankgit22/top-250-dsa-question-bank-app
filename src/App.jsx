@@ -69,6 +69,7 @@ function App() {
   }, []);
 
   const difficulties = ["All", "Easy", "Medium", "Hard"];
+  const tags = ["All", "Interview", "OA", "Both"];
 
   const toggleItem = (setter) => (id) => {
     setter((prev) => {
