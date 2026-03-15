@@ -1,13 +1,41 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 const API_BASE = "https://alfa-leetcode-api.onrender.com";
 const STORAGE_KEY = "dsa-leetcode-username";
+const FETCH_TIMEOUT_MS = 30000;
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 3000;
 
 function loadUsername() {
   try {
     return localStorage.getItem(STORAGE_KEY) || "";
   } catch {
     return "";
+  }
+}
+
+function fetchWithTimeout(url, timeoutMs, signal) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  if (signal) {
+    signal.addEventListener("abort", () => controller.abort());
+  }
+
+  return fetch(url, { signal: controller.signal }).finally(() =>
+    clearTimeout(timeoutId)
+  );
+}
+
+async function fetchWithRetry(url, { timeoutMs, retries, retryDelayMs, signal }) {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fetchWithTimeout(url, timeoutMs, signal);
+    } catch (err) {
+      if (signal && signal.aborted) throw err;
+      if (attempt === retries) throw err;
+      await new Promise((r) => setTimeout(r, retryDelayMs));
+    }
   }
 }
 
@@ -19,20 +47,36 @@ function LeetCodeProfile() {
   const [badges, setBadges] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const abortRef = useRef(null);
 
   const fetchProfile = useCallback(async (user) => {
     if (!user) return;
+
+    if (abortRef.current) abortRef.current.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     setLoading(true);
     setError("");
     try {
+      const fetchOpts = {
+        timeoutMs: FETCH_TIMEOUT_MS,
+        retries: MAX_RETRIES,
+        retryDelayMs: RETRY_DELAY_MS,
+        signal: controller.signal,
+      };
+
       const [profileRes, solvedRes, badgesRes] = await Promise.all([
-        fetch(`${API_BASE}/${user}`),
-        fetch(`${API_BASE}/${user}/solved`),
-        fetch(`${API_BASE}/${user}/badges`),
+        fetchWithRetry(`${API_BASE}/${user}`, fetchOpts),
+        fetchWithRetry(`${API_BASE}/${user}/solved`, fetchOpts),
+        fetchWithRetry(`${API_BASE}/${user}/badges`, fetchOpts),
       ]);
 
       if (!profileRes.ok) {
         throw new Error("User not found");
+      }
+      if (!solvedRes.ok || !badgesRes.ok) {
+        throw new Error("Failed to fetch complete profile data");
       }
 
       const profileData = await profileRes.json();
@@ -47,7 +91,13 @@ function LeetCodeProfile() {
       setSolved(solvedData);
       setBadges(badgesData);
     } catch (err) {
-      setError(err.message || "Failed to fetch profile");
+      if (controller.signal.aborted && err.name === "AbortError") return;
+      let message = err.message || "Failed to fetch profile";
+      if (err.name === "AbortError") {
+        message =
+          "Request timed out. The API server may be waking up — please try again in a moment.";
+      }
+      setError(message);
       setProfile(null);
       setSolved(null);
       setBadges(null);
@@ -61,6 +111,12 @@ function LeetCodeProfile() {
       fetchProfile(username);
     }
   }, [username, fetchProfile]);
+
+  useEffect(() => {
+    return () => {
+      if (abortRef.current) abortRef.current.abort();
+    };
+  }, []);
 
   const handleConnect = (e) => {
     e.preventDefault();
@@ -100,7 +156,14 @@ function LeetCodeProfile() {
         </form>
       ) : (
         <div className="leetcode-connected">
-          {loading && <div className="leetcode-loading">Loading profile...</div>}
+          {loading && (
+            <div className="leetcode-loading">
+              Loading profile…
+              <span className="leetcode-loading-hint">
+                This may take a moment if the API server is waking up.
+              </span>
+            </div>
+          )}
 
           {error && (
             <div className="leetcode-error">

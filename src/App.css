@@ -500,6 +500,13 @@
   font-size: 0.9rem;
 }
 
+.leetcode-loading-hint {
+  display: block;
+  margin-top: 6px;
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
 .leetcode-error {
   display: flex;
   flex-direction: column;
