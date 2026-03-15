@@ -166,4 +166,74 @@ describe("LeetCodeProfile", () => {
       expect(hint).not.toBeNull();
     });
   });
+
+  it("shows friendly error when API returns non-JSON response", async () => {
+    global.fetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.reject(new SyntaxError("Unexpected token <")),
+      })
+    );
+
+    render(<LeetCodeProfile />);
+    const inputs = screen.getAllByPlaceholderText("Enter LeetCode username");
+    fireEvent.change(inputs[0], { target: { value: "htmluser" } });
+    const connectBtns = screen.getAllByText("Connect");
+    fireEvent.click(connectBtns[0]);
+
+    await waitFor(() => {
+      const errorEl = screen.queryByText(/invalid response from the API/i);
+      expect(errorEl).not.toBeNull();
+    });
+  });
+
+  it("does not set error or clear loading when fetch is aborted mid-retry", async () => {
+    let callCount = 0;
+    global.fetch = vi.fn(() => {
+      callCount++;
+      return Promise.reject(new Error("network error"));
+    });
+
+    render(<LeetCodeProfile />);
+    const inputs = screen.getAllByPlaceholderText("Enter LeetCode username");
+
+    // Start first fetch (will fail and begin retrying)
+    fireEvent.change(inputs[0], { target: { value: "user1" } });
+    const connectBtns = screen.getAllByText("Connect");
+    fireEvent.click(connectBtns[0]);
+
+    // Wait for at least the first round of calls
+    await waitFor(() => {
+      expect(callCount).toBeGreaterThanOrEqual(3);
+    });
+
+    // Now start a second fetch while the first is still retrying
+    // This mocks a successful response for the second fetch
+    global.fetch = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ name: "User2" }),
+      })
+    );
+
+    // Trigger disconnect then reconnect to simulate rapid user action
+    const disconnectBtns = screen.getAllByText("Disconnect");
+    fireEvent.click(disconnectBtns[0]);
+
+    // Reconnect
+    const inputs2 = screen.getAllByPlaceholderText("Enter LeetCode username");
+    fireEvent.change(inputs2[0], { target: { value: "user2" } });
+    const connectBtns2 = screen.getAllByText("Connect");
+    fireEvent.click(connectBtns2[0]);
+
+    // The second fetch should succeed without interference from the first
+    await waitFor(() => {
+      const nameEl = screen.queryByText("User2");
+      expect(nameEl).not.toBeNull();
+    });
+
+    // No error message should be visible from the aborted first fetch
+    const errorEl = screen.queryByText(/network error/i);
+    expect(errorEl).toBeNull();
+  }, 20000);
 });

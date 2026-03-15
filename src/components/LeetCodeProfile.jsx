@@ -18,13 +18,17 @@ function fetchWithTimeout(url, timeoutMs, signal) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
+  const onAbort = () => controller.abort();
   if (signal) {
-    signal.addEventListener("abort", () => controller.abort());
+    signal.addEventListener("abort", onAbort);
   }
 
-  return fetch(url, { signal: controller.signal }).finally(() =>
-    clearTimeout(timeoutId)
-  );
+  return fetch(url, { signal: controller.signal }).finally(() => {
+    clearTimeout(timeoutId);
+    if (signal) {
+      signal.removeEventListener("abort", onAbort);
+    }
+  });
 }
 
 async function fetchWithRetry(url, { timeoutMs, retries, retryDelayMs, signal }) {
@@ -79,9 +83,16 @@ function LeetCodeProfile() {
         throw new Error("Failed to fetch complete profile data");
       }
 
-      const profileData = await profileRes.json();
-      const solvedData = await solvedRes.json();
-      const badgesData = await badgesRes.json();
+      let profileData, solvedData, badgesData;
+      try {
+        profileData = await profileRes.json();
+        solvedData = await solvedRes.json();
+        badgesData = await badgesRes.json();
+      } catch {
+        throw new Error(
+          "Received an invalid response from the API. Please try again."
+        );
+      }
 
       if (profileData.errors || profileData.error) {
         throw new Error("User not found");
@@ -91,7 +102,7 @@ function LeetCodeProfile() {
       setSolved(solvedData);
       setBadges(badgesData);
     } catch (err) {
-      if (controller.signal.aborted && err.name === "AbortError") return;
+      if (controller.signal.aborted) return;
       let message = err.message || "Failed to fetch profile";
       if (err.name === "AbortError") {
         message =
@@ -102,7 +113,9 @@ function LeetCodeProfile() {
       setSolved(null);
       setBadges(null);
     } finally {
-      setLoading(false);
+      if (!controller.signal.aborted) {
+        setLoading(false);
+      }
     }
   }, []);
 
